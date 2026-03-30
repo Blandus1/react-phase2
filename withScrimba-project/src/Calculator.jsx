@@ -93,10 +93,10 @@ function CalcButton({ label, type, span, onClick }) {
   // Pick background + text color based on the button's type
   const colorClass =
     type === "operator"
-      ? "bg-orange-500 hover:bg-orange-400 text-white"
+      ? "bg-orange-500 text-white"
       : type === "clear" || type === "negate" || type === "percent"
-      ? "bg-gray-300 hover:bg-gray-200 text-black"
-      : "bg-gray-400 hover:bg-gray-300 text-white"; // digit / decimal
+      ? "bg-gray-300 text-black"
+      : "bg-gray-400 text-white"; 
 
   return (
     <button
@@ -133,7 +133,6 @@ export default function Calculator() {
   const [operator,       setOperator]       = useState(null);
   const [waitingForNext, setWaitingForNext] = useState(false);
 
-  // ── HANDLER: a digit key (0–9) was pressed ───────────────────
   function handleDigit(digit) {
     if (waitingForNext) {
       // Operator was just pressed → start a brand-new number on screen
@@ -235,14 +234,14 @@ export default function Calculator() {
   // ── RENDER ───────────────────────────────────────────────────
   return (
     // Full viewport, black background — centers the calculator
-    <div className="min-h-screen bg-black flex items-center justify-center">
+    <div className="min-h-screen bg-black flex items-center justify-center ">
 
       {/* Calculator shell — fixed width to match the video */}
-      <div className="w-80 shadow-2xl overflow-hidden">
+      <div className="w-82  overflow-auto">
 
         {/* ── DISPLAY BAR ── */}
         {/* Dark gray, number is right-aligned, text shrinks for long numbers */}
-        <div className="bg-gray-600 flex items-end justify-end px-5 py-4 min-h-[90px]">
+        <div className="bg-gray-600 flex items-end justify-end px-5 py-4 min-h-22.5">
           <span
             className="text-white font-light text-right leading-none"
             style={{
