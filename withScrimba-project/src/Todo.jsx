@@ -11,11 +11,17 @@ function handleInputChange(e){
 }
 
 function handleAddition(){
-   setTodos( (todo)=> [...todo, newTodo])
+if(newTodo.trim() !== "")
+
+   setTodos( (todo)=> [...todo, {text:newTodo,completed:false}])
    setNewTodo("")
 }
 function handleDelete(id){
 setTodos(todos=> todos.filter((_,index)=> index !== id))
+}
+
+function handleChecked(index){
+setTodos(todos.map((todo,id)=> id=== index?{...todo, completed:  !todo.completed}:todo))
 }
 
 
@@ -32,8 +38,9 @@ setTodos(todos=> todos.filter((_,index)=> index !== id))
                 <ol className='gap-5'>
             {todos.map((todo,id)=>
                 <li key={id}> 
-                  <input type="checkbox" className='border border-black'/>
-                <span>{todo}</span>
+                  <input type="checkbox" checked={todo.completed} onChange={()=>handleChecked(id)} />
+                 
+                <span className={`${todo.completed? "line-through text-gray-400 ":""}`}>{todo.text}</span>
                    <button onClick={()=>handleDelete(id)} className="bg-[#cece2d] rounded-full ">
                 <FontAwesomeIcon icon= {faTrash}/>
             </button>
