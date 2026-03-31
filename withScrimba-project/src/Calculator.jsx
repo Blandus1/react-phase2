@@ -37,7 +37,6 @@ const BUTTONS = [
   { label: "3",   type: "digit"    },
   { label: "+",   type: "operator" },
 
-  // "0" spans 2 columns — matches the video layout
   { label: "0",   type: "digit",   span: true },
   { label: ".",   type: "decimal"  },
   { label: "=",   type: "operator" },
@@ -84,31 +83,32 @@ function formatResult(value) {
 //    span    → if true, the button spans 2 grid columns
 //    onClick → function(label, type) passed in from the parent
 //
-//  Color rules (matching the video exactly):
+//  Color rules :
 //    "operator" (÷ x - + =)       → orange
 //    "clear" | "negate" | "percent" → light gray, black text
 //    "digit" | "decimal"            → medium gray, white text
 // ─────────────────────────────────────────────────────────────────
 function CalcButton({ label, type, span, onClick }) {
-  // Pick background + text color based on the button's type
+
   const colorClass =
     type === "operator"
-      ? "bg-orange-500 text-white"
+      ? "bg-orange-500 text-white font-medium"
       : type === "clear" || type === "negate" || type === "percent"
-      ? "bg-gray-300 text-black"
-      : "bg-gray-400 text-white"; 
+      ? "bg-gray-300 text-black font-medium"
+      : "bg-gray-300 text-black font-medium"; 
 
   return (
     <button
       onClick={() => onClick(label, type)}   // bubble up label + type to parent
+
       className={[
-        "flex items-center justify-start pl-5", // left-align text like in video
+        "flex items-center ", // left-align text like in video
+         span ? "justify-center" : "justify-start pl-5",
         "text-2xl font-light",
-        "h-20",                                 // fixed height for uniform rows
-        "transition-colors duration-75",
-        "active:brightness-75",                 // quick press feedback
+        "h-20",                                // fixed height for uniform rows
+        "border border-neutral-400",   // ← adds visible lines around each button
         colorClass,
-        span ? "col-span-2" : "",               // 0 fills 2 columns
+        span ? "col-span-2 " : "",               // 0 fills 2 columns
       ].join(" ")}
     >
       {label}
@@ -127,7 +127,7 @@ function CalcButton({ label, type, span, onClick }) {
 //                     means the very next digit press will START a new
 //                     number instead of appending to the current one
 // ─────────────────────────────────────────────────────────────────
-export default function Calculator() {
+ function Calculator() {
   const [display,        setDisplay]        = useState("0");
   const [storedValue,    setStoredValue]    = useState(null);
   const [operator,       setOperator]       = useState(null);
@@ -147,8 +147,7 @@ export default function Calculator() {
     }
   }
 
-  // ── HANDLER: the decimal point "." was pressed ───────────────
-  function handleDecimal() {
+  function handleDecimal() {// handles the "." point
     if (waitingForNext) {
       // Start fresh decimal number after an operator press
       setDisplay("0.");
@@ -161,14 +160,12 @@ export default function Calculator() {
     }
   }
 
-  // ── HANDLER: an operator (+, -, x, ÷) was pressed ───────────
-  function handleOperator(op) {
+  function handleOperator(op) {// handle the operator that was pressed
     if (operator && !waitingForNext) {
       // ── CHAINING BEHAVIOR ────────────────────────────────────
       // Example: user types  2  →  +  →  3  →  ×
       //   Instead of ignoring the pending "+", we compute 2+3=5 first,
       //   display "5", then store "5" as the new first operand for "×".
-      // This is exactly the behavior shown in the video.
       const result    = calculate(storedValue, operator, display);
       const formatted = formatResult(result);
       setDisplay(formatted);
@@ -182,9 +179,9 @@ export default function Calculator() {
     setWaitingForNext(true); // next digit will start a fresh number
   }
 
-  // ── HANDLER: the equals "=" key was pressed ──────────────────
-  function handleEquals() {
-    // Do nothing if there's no stored operation to complete
+ 
+  function handleEquals() {// When the "=" is pressed
+  
     if (!operator || storedValue === null) return;
 
     const result    = calculate(storedValue, operator, display);
@@ -196,16 +193,15 @@ export default function Calculator() {
     setWaitingForNext(false);
   }
 
-  // ── HANDLER: AC was pressed — reset everything ───────────────
-  function handleClear() {
+  function handleClear() {//reset everything at AC
     setDisplay("0");
     setStoredValue(null);
     setOperator(null);
     setWaitingForNext(false);
   }
 
-  // ── HANDLER: +/- was pressed — flip the sign ─────────────────
-  function handleNegate() {
+  
+  function handleNegate() {//+/- was pressed — flip the sign
     setDisplay(prev =>
       prev.startsWith("-") ? prev.slice(1)         // remove "-"
       : prev === "0"       ? "0"                   // don't negate zero
@@ -213,14 +209,12 @@ export default function Calculator() {
     );
   }
 
-  // ── HANDLER: % was pressed — convert to percentage ───────────
-  function handlePercent() {
+ 
+  function handlePercent() {//converts to percentage
     setDisplay(prev => formatResult(parseFloat(prev) / 100));
   }
 
-  // ── UNIFIED ROUTER: all button presses arrive here ───────────
-  // CalcButton calls onClick(label, type); we route to the right handler.
-  function handlePress(label, type) {
+  function handlePress(label, type) {//handles all buttons pressing
     switch (type) {
       case "digit":    return handleDigit(label);
       case "decimal":  return handleDecimal();
@@ -231,9 +225,7 @@ export default function Calculator() {
     }
   }
 
-  // ── RENDER ───────────────────────────────────────────────────
   return (
-    // Full viewport, black background — centers the calculator
     <div className="min-h-screen bg-black flex items-center justify-center ">
 
       {/* Calculator shell — fixed width to match the video */}
@@ -241,7 +233,7 @@ export default function Calculator() {
 
         {/* ── DISPLAY BAR ── */}
         {/* Dark gray, number is right-aligned, text shrinks for long numbers */}
-        <div className="bg-gray-600 flex items-end justify-end px-5 py-4 min-h-22.5">
+        <div className="bg-gray-600 flex items-end justify-end px-5 py-4 min-h-20">
           <span
             className="text-white font-light text-right leading-none"
             style={{
@@ -256,18 +248,16 @@ export default function Calculator() {
         </div>
 
         {/* ── BUTTON GRID ── */}
-        {/* 4-column, no gaps — flat tiles exactly like the video */}
         <div className="grid grid-cols-4">
           {/*
-            Map over BUTTONS array — each object becomes a CalcButton.
-            We spread the object as props so label/type/span all flow in cleanly.
-            onClick is the shared handlePress router defined above.
+           spread the object as props so label/type/span all flow in cleanly.
+            onClick-shared handlePress router defined above.
           */}
-          {BUTTONS.map((btn) => (
+          {BUTTONS.map((btn) => (//each object becomes a CalcButton
             <CalcButton
               key={btn.label}
               {...btn}                  // spreads label, type, span as props
-              onClick={handlePress}     // single handler for every button
+              onClick={handlePress}     
             />
           ))}
         </div>
@@ -276,3 +266,5 @@ export default function Calculator() {
     </div>
   );
 }
+
+export default Calculator;
